@@ -1,0 +1,108 @@
+/home/miron/Documents/es.wallapop-auto-account-cre(.venv) miron@miron-desktop:~/Documents/es.wallapop-auto-account-create/src$ /home/miron/Documents/es.wallapop-auto-account-create/.venv/bin/python /home/miron/Documents/es.wallapop-auto-account-create/src/main.py
+2024-02-18 00:26:03.672 | INFO     | __main__:<module>:44 - oEM1qe7DhC1E@houschool.com - успешно приняты cookies
+2024-02-18 00:26:03 | INFO | __main__:<module> - oEM1qe7DhC1E@houschool.com - успешно приняты cookies
+2024-02-18 00:26:13.829 | INFO     | __main__:<module>:51 - oEM1qe7DhC1E@houschool.com - успешно начат вход google пользователя
+2024-02-18 00:26:13 | INFO | __main__:<module> - oEM1qe7DhC1E@houschool.com - успешно начат вход google пользователя
+2024-02-18 00:26:23.848 | INFO     | __main__:<module>:60 - oEM1qe7DhC1E@houschool.com - успешно открыто дочернее google oaut окно
+2024-02-18 00:26:23 | INFO | __main__:<module> - oEM1qe7DhC1E@houschool.com - успешно открыто дочернее google oaut окно
+2024-02-18 00:26:34.139 | INFO     | __main__:<module>:68 - oEM1qe7DhC1E@houschool.com - успешно вписано поле почты
+2024-02-18 00:26:34 | INFO | __main__:<module> - oEM1qe7DhC1E@houschool.com - успешно вписано поле почты
+2024-02-18 00:26:44.333 | INFO     | __main__:<module>:77 - oEM1qe7DhC1E@houschool.com - успешно вписано поле пароля
+2024-02-18 00:26:44 | INFO | __main__:<module> - oEM1qe7DhC1E@houschool.com - успешно вписано поле пароля
+2024-02-18 00:26:54.346 | WARNING  | __main__:<module>:86 - oEM1qe7DhC1E@houschool.com - вероятно браузер не потребовал подтверждение входа через google
+2024-02-18 00:26:54 | WARNING | __main__:<module> - oEM1qe7DhC1E@houschool.com - вероятно браузер не потребовал подтверждение входа через google
+2024-02-18 00:26:54.346 | ERROR    | __main__:<module>:87 - Message: no such window: target window already closed
+from unknown error: web view not found
+  (Session info: chrome=121.0.6167.184)
+Stacktrace:
+#0 0x565057f13303 <unknown>
+#1 0x565057bf82b7 <unknown>
+#2 0x565057bce958 <unknown>
+#3 0x565057c6eded <unknown>
+#4 0x565057c849d9 <unknown>
+#5 0x565057c66123 <unknown>
+#6 0x565057c36095 <unknown>
+#7 0x565057c3709e <unknown>
+#8 0x565057ed76ab <unknown>
+#9 0x565057edb4ba <unknown>
+#10 0x565057ec3f85 <unknown>
+#11 0x565057edc12f <unknown>
+#12 0x565057ea7e6f <unknown>
+#13 0x565057f005f8 <unknown>
+#14 0x565057f007c2 <unknown>
+#15 0x565057f124a4 <unknown>
+#16 0x7fe330894ac3 <unknown>
+
+2024-02-18 00:26:54 | ERROR | __main__:<module> - Message: no such window: target window already closed
+from unknown error: web view not found
+  (Session info: chrome=121.0.6167.184)
+Stacktrace:
+#0 0x565057f13303 <unknown>
+#1 0x565057bf82b7 <unknown>
+#2 0x565057bce958 <unknown>
+#3 0x565057c6eded <unknown>
+#4 0x565057c849d9 <unknown>
+#5 0x565057c66123 <unknown>
+#6 0x565057c36095 <unknown>
+#7 0x565057c3709e <unknown>
+#8 0x565057ed76ab <unknown>
+#9 0x565057edb4ba <unknown>
+#10 0x565057ec3f85 <unknown>
+#11 0x565057edc12f <unknown>
+#12 0x565057ea7e6f <unknown>
+#13 0x565057f005f8 <unknown>
+#14 0x565057f007c2 <unknown>
+#15 0x565057f124a4 <unknown>
+#16 0x7fe330894ac3 <unknown>
+
+2024-02-18 00:27:04.359 | INFO     | __main__:<module>:92 - oEM1qe7DhC1E@houschool.com - успешно вернулись к основному окну
+2024-02-18 00:27:04 | INFO | __main__:<module> - oEM1qe7DhC1E@houschool.com - успешно вернулись к основному окну
+2024-02-18 00:27:19.066 | ERROR    | __main__:<module>:102 - Message: element not interactable
+  (Session info: chrome=121.0.6167.184)
+Stacktrace:
+#0 0x565057f13303 <unknown>
+#1 0x565057bf80f7 <unknown>
+#2 0x565057c44f19 <unknown>
+#3 0x565057c38617 <unknown>
+#4 0x565057c66382 <unknown>
+#5 0x565057c37f88 <unknown>
+#6 0x565057c6654e <unknown>
+#7 0x565057c8507c <unknown>
+#8 0x565057c66123 <unknown>
+#9 0x565057c36095 <unknown>
+#10 0x565057c3709e <unknown>
+#11 0x565057ed76ab <unknown>
+#12 0x565057edb4ba <unknown>
+#13 0x565057ec3f85 <unknown>
+#14 0x565057edc12f <unknown>
+#15 0x565057ea7e6f <unknown>
+#16 0x565057f005f8 <unknown>
+#17 0x565057f007c2 <unknown>
+#18 0x565057f124a4 <unknown>
+#19 0x7fe330894ac3 <unknown>
+
+2024-02-18 00:27:19 | ERROR | __main__:<module> - Message: element not interactable
+  (Session info: chrome=121.0.6167.184)
+Stacktrace:
+#0 0x565057f13303 <unknown>
+#1 0x565057bf80f7 <unknown>
+#2 0x565057c44f19 <unknown>
+#3 0x565057c38617 <unknown>
+#4 0x565057c66382 <unknown>
+#5 0x565057c37f88 <unknown>
+#6 0x565057c6654e <unknown>
+#7 0x565057c8507c <unknown>
+#8 0x565057c66123 <unknown>
+#9 0x565057c36095 <unknown>
+#10 0x565057c3709e <unknown>
+#11 0x565057ed76ab <unknown>
+#12 0x565057edb4ba <unknown>
+#13 0x565057ec3f85 <unknown>
+#14 0x565057edc12f <unknown>
+#15 0x565057ea7e6f <unknown>
+#16 0x565057f005f8 <unknown>
+#17 0x565057f007c2 <unknown>
+#18 0x565057f124a4 <unknown>
+#19 0x7fe330894ac3 <unknown>
+
+(.venv) miron@miron-desktop:~/Documents/es.wallapop-auto-account-create/src$ 

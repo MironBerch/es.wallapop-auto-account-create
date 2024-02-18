@@ -1,0 +1,17 @@
+auto-account-create/src$ /home/miron/Documents/es.wallapop-auto-account-create/.venv/bin/python /home/miron/Documents/es.wallapop-auto-account-create/src/main.py
+2024-02-18 00:30:36.521 | INFO     | __main__:<module>:44 - 352CB14WK3hE@houschool.com - успешно приняты cookies
+2024-02-18 00:30:36 | INFO | __main__:<module> - 352CB14WK3hE@houschool.com - успешно приняты cookies
+2024-02-18 00:30:46.684 | INFO     | __main__:<module>:51 - 352CB14WK3hE@houschool.com - успешно начат вход google пользователя
+2024-02-18 00:30:46 | INFO | __main__:<module> - 352CB14WK3hE@houschool.com - успешно начат вход google пользователя
+2024-02-18 00:30:56.708 | INFO     | __main__:<module>:60 - 352CB14WK3hE@houschool.com - успешно открыто дочернее google oaut окно
+2024-02-18 00:30:56 | INFO | __main__:<module> - 352CB14WK3hE@houschool.com - успешно открыто дочернее google oaut окно
+2024-02-18 00:31:06.999 | INFO     | __main__:<module>:68 - 352CB14WK3hE@houschool.com - успешно вписано поле почты
+2024-02-18 00:31:06 | INFO | __main__:<module> - 352CB14WK3hE@houschool.com - успешно вписано поле почты
+2024-02-18 00:31:17.185 | INFO     | __main__:<module>:77 - 352CB14WK3hE@houschool.com - успешно вписано поле пароля
+2024-02-18 00:31:17 | INFO | __main__:<module> - 352CB14WK3hE@houschool.com - успешно вписано поле пароля
+2024-02-18 00:31:27.262 | INFO     | __main__:<module>:84 - 352CB14WK3hE@houschool.com - успешно подтверждён вход через google
+2024-02-18 00:31:27 | INFO | __main__:<module> - 352CB14WK3hE@houschool.com - успешно подтверждён вход через google
+2024-02-18 00:31:37.271 | INFO     | __main__:<module>:92 - 352CB14WK3hE@houschool.com - успешно вернулись к основному окну
+2024-02-18 00:31:37 | INFO | __main__:<module> - 352CB14WK3hE@houschool.com - успешно вернулись к основному окну
+2024-02-18 00:31:47.426 | INFO     | __main__:<module>:100 - 352CB14WK3hE@houschool.com - успешно прочитано соглашение
+2024-02-18 00:31:47 | INFO | __main__:<module> - 352CB14WK3hE@houschool.com - успешно прочитано соглашение
