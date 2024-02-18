@@ -49,8 +49,6 @@ def create_driver(proxy: str = None) -> webdriver.Chrome:
     options = undetected_chromedriver.ChromeOptions()
     seleniumwire_options = None
     if proxy:
-        #options.add_argument('--proxy-type=socks5')
-        #options.add_argument(f'--proxy-server={proxy}')
         seleniumwire_options = {
             'proxy': {
                 'https': f'socks5://{proxy}/',
@@ -63,14 +61,19 @@ def create_driver(proxy: str = None) -> webdriver.Chrome:
     options.add_argument('--ignore-ssl-errors')
     options.add_argument('--ignore-certificate-errors')
     #options.add_argument("--headless")  # Run Chrome in headless mode
-    #options.add_experimental_option('mobileEmulation', {'prefers-color-scheme': 'dark'})
+
     service = Service(executable_path=ChromeDriverManager().install())
     driver = undetected_chromedriver.Chrome(
-        #seleniumwire_options=proxy_options,
         seleniumwire_options=seleniumwire_options,
         service=service,
         options=options,
     )
+    driver.execute_cdp_cmd('Emulation.setDeviceMetricsOverride', {
+        'width': 360, # Set your desired width here
+        'height': 640, # Set your desired height here
+        'deviceScaleFactor': 2, # Set the scale factor here
+        'mobile': True, # Emulate a mobile device
+    })
     return driver
 
 
@@ -90,22 +93,21 @@ def register_user_account_in_it_wallapop(
             logger.info(f'{email} - приняты cookies')
         except Exception as exception:
             logger.warning(f'{email} - не найдено окно принятия cookies')
-            logger.error(exception)
         finally:
-            sleep(10)
+            sleep(20)
         try:
             driver.find_element(By.XPATH, '//walla-button[1]').click()
             logger.info(f'{email} - начат вход google пользователя')
         except Exception as exception:
             logger.error(exception)
         finally:
-            sleep(10)
+            sleep(20)
 
         main_window_handle = driver.window_handles[0]
         child_window_handle = driver.window_handles[1]
         driver.switch_to.window(child_window_handle)
         logger.info(f'{email} - успешно открыто дочернее google oaut окно')
-        sleep(10)
+        sleep(20)
 
         try:
             driver.find_element(
@@ -117,7 +119,7 @@ def register_user_account_in_it_wallapop(
         except Exception as exception:
             logger.error(exception)
         finally:
-            sleep(10)
+            sleep(20)
 
         driver.find_element(
             By.XPATH,
@@ -125,7 +127,7 @@ def register_user_account_in_it_wallapop(
         ).send_keys(password)
         driver.find_element(By.XPATH, '//span[text()="Next"]').click()
         logger.info(f'{email} - заполнено поле пароля')
-        sleep(10)
+        sleep(20)
 
         try:
             driver.find_element(By.XPATH, '//div[@id="confirm_yes"]').click()
@@ -134,11 +136,11 @@ def register_user_account_in_it_wallapop(
             logger.warning(f'{email} - вероятно браузер не потребовал подтверждение входа через google')
             logger.error(exception)
         finally:
-            sleep(10)
+            sleep(20)
 
         driver.switch_to.window(main_window_handle)
         logger.info(f'{email} - вернулись к основному окну')
-        sleep(10)
+        sleep(20)
 
         try:
             driver.find_element(
@@ -150,7 +152,7 @@ def register_user_account_in_it_wallapop(
         except Exception as exception:
             logger.error(exception)
         finally:
-            sleep(10)
+            sleep(20)
 
         logger.info(f'{email} - начинает ожидание длинной в 15 минут')
         sleep(15*60)
