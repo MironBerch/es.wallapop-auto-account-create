@@ -5,6 +5,7 @@ from loguru import logger
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from seleniumwire import undetected_chromedriver
 #from seleniumwire import webdriver, undetected_chromedriver
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -20,8 +21,6 @@ def create_credentials_dict() -> dict[str, str]:
         for line in file:
             email, password = line.strip().split(' ')
             credentials_dict[email] = password
-    for email, password in credentials_dict.items():
-        print(f'Email: {email}, Password: {password}')
     return credentials_dict
 
 
@@ -46,11 +45,17 @@ def get_random_unused_proxy(proxy_list: list) -> str:
 
 
 def create_driver(proxy: str = None) -> webdriver.Chrome:
-    options = webdriver.ChromeOptions()
-    #undetected_chromedriver.ChromeOptions()
+    #options = webdriver.ChromeOptions()
+    options = undetected_chromedriver.ChromeOptions()
+    seleniumwire_options = None
     if proxy:
-        options.add_argument('--proxy-type=socks5')
-        options.add_argument(f'--proxy-server={proxy}')
+        #options.add_argument('--proxy-type=socks5')
+        #options.add_argument(f'--proxy-server={proxy}')
+        seleniumwire_options = {
+            'proxy': {
+                'https': f'socks5://{proxy}/',
+            }
+        }
     options.add_argument('--disable-blink-features=AutomationControlled')
     options.add_argument(
         '--user-agent=Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.43 Mobile Safari/537.36'
@@ -58,9 +63,11 @@ def create_driver(proxy: str = None) -> webdriver.Chrome:
     options.add_argument('--ignore-ssl-errors')
     options.add_argument('--ignore-certificate-errors')
     #options.add_argument("--headless")  # Run Chrome in headless mode
+    #options.add_experimental_option('mobileEmulation', {'prefers-color-scheme': 'dark'})
     service = Service(executable_path=ChromeDriverManager().install())
-    driver = webdriver.Chrome(
+    driver = undetected_chromedriver.Chrome(
         #seleniumwire_options=proxy_options,
+        seleniumwire_options=seleniumwire_options,
         service=service,
         options=options,
     )
@@ -74,7 +81,7 @@ def register_user_account_in_it_wallapop(
 ) -> None:
     try:
         driver.get(url='https://it.wallapop.com/login')
-        sleep(10)
+        sleep(20)
         try:
             driver.find_element(
                 By.XPATH,
