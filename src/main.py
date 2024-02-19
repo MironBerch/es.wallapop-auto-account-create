@@ -15,6 +15,19 @@ logger.add(
 )
 
 
+def create_config_dict() -> dict:
+    config_dict = {}
+    with open('config.txt', 'r') as file:
+        lines = file.readlines()
+        try:
+            config_dict['user_id'] = lines[0].strip()
+            config_dict['api_key'] = lines[1].strip()
+            config_dict['url'] = lines[2].strip()
+        except Exception:
+            pass
+    return config_dict
+
+
 def create_credentials_dict() -> dict[str, str]:
     credentials_dict = {}
     with open('credentials.txt', 'r') as file:
@@ -48,16 +61,16 @@ def create_driver(proxy: str = None) -> webdriver.Chrome:
     #options = webdriver.ChromeOptions()
     options = undetected_chromedriver.ChromeOptions()
     seleniumwire_options = None
-    if proxy:
-        seleniumwire_options = {
-            'proxy': {
-                'https': f'socks5://{proxy}/',
-            }
-        }
+    #if proxy:
+    #    seleniumwire_options = {
+    #        'proxy': {
+    #            'https': f'socks5://{proxy}/',
+    #        }
+    #    }
     options.add_argument('--disable-blink-features=AutomationControlled')
-    options.add_argument(
-        '--user-agent=Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.43 Mobile Safari/537.36'
-    )
+    #options.add_argument(
+    #    '--user-agent=Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.43 Mobile Safari/537.36'
+    #)
     options.add_argument('--ignore-ssl-errors')
     options.add_argument('--ignore-certificate-errors')
     #options.add_argument("--headless")  # Run Chrome in headless mode
@@ -68,12 +81,12 @@ def create_driver(proxy: str = None) -> webdriver.Chrome:
         service=service,
         options=options,
     )
-    driver.execute_cdp_cmd('Emulation.setDeviceMetricsOverride', {
-        'width': 360, # Set your desired width here
-        'height': 640, # Set your desired height here
-        'deviceScaleFactor': 2, # Set the scale factor here
-        'mobile': True, # Emulate a mobile device
-    })
+    #driver.execute_cdp_cmd('Emulation.setDeviceMetricsOverride', {
+    #    'width': 360, # Set your desired width here
+    #    'height': 740, # Set your desired height here
+    #    'deviceScaleFactor': 0, # Set the scale factor here
+    #    'mobile': True, # Emulate a mobile device
+    #})
     return driver
 
 
@@ -130,10 +143,18 @@ def register_user_account_in_it_wallapop(
         sleep(20)
 
         try:
+            driver.find_element(By.ID, 'confirm').click()
+            logger.warning(f'{email} - Добро пожаловать в ваш новый аккаунт')
+        except Exception as exception:
+            pass
+        finally:
+            sleep(20)
+
+        try:
             driver.find_element(By.XPATH, '//div[@id="confirm_yes"]').click()
             logger.info(f'{email} - подтверждён вход через google')
         except Exception as exception:
-            logger.warning(f'{email} - вероятно браузер не потребовал подтверждение входа через google')
+            logger.info(f'{email} - вероятно браузер не потребовал подтверждение входа через google')
             logger.error(exception)
         finally:
             sleep(20)
@@ -153,10 +174,9 @@ def register_user_account_in_it_wallapop(
             logger.error(exception)
         finally:
             sleep(20)
-
         logger.info(f'{email} - начинает ожидание длинной в 15 минут')
-        sleep(15*60)
-        logger.info(f'{email} - начинает ожидание длинной в 15 минут')
+        return driver
+        #sleep(15*60)
 
     except Exception as exception:
         logger.error(exception)
@@ -167,14 +187,24 @@ def register_user_account_in_it_wallapop(
 
 credentials_dict = create_credentials_dict()
 proxy_list = create_proxy_list()
+drivers = []
+config_dict = create_config_dict()
 
 for email, password in credentials_dict.items():
-    register_user_account_in_it_wallapop(
-        driver=create_driver(
-            proxy=get_random_unused_proxy(
-                proxy_list=proxy_list,
-            )
-        ),
-        email=email,
-        password=password,
+    drivers.append(
+        register_user_account_in_it_wallapop(
+            driver=create_driver(
+                proxy=get_random_unused_proxy(
+                    proxy_list=proxy_list,
+                )
+            ),
+            email=email,
+            password=password,
+        )
     )
+
+sleep(15*60)
+
+for driver in drivers:
+    driver.close()
+    driver.quit()
