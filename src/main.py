@@ -1,18 +1,56 @@
 from time import sleep
 from random import choice
-
+import requests
+import socks
+import socket
 from loguru import logger
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from seleniumwire import undetected_chromedriver
 #from seleniumwire import webdriver, undetected_chromedriver
-from webdriver_manager.chrome import ChromeDriverManager
+#from webdriver_manager.chrome import ChromeDriverManager
+import requests
+import random
+import string
 
 logger.add(
     sink=lambda message: print(message, end=''),
     format='<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan> - {message}',
 )
+
+
+def create_ads_power_group() -> str:
+    create_group = requests.post(
+        'http://local.adspower.net:50325/api/v1/group/create',
+        json={
+            'group_name': ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8)),
+        },
+    ).json()
+    group_id = create_group['data']['group_id']
+    return str(group_id)
+
+
+def create_ads_power_profile(connection, host, port, group_id) -> str:
+    create = requests.post(
+        f'{connection}/api/v1/user/create', 
+        json={
+            'group_id': group_id,
+            'user_proxy_config': {
+                'proxy_soft': 'other',
+                'proxy_type': 'socks5',
+                'proxy_host': host,
+                'proxy_port': port,
+            },
+            'country': 'it',
+            'ip_country': 'it',
+            'fingerprint_config': {
+                'ua': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.6045.163 Mobile Safari/537.36',
+                'ua_system_version': ["Android"],
+            },
+        },
+    ).json()
+    return create['data']['ip']
 
 
 def create_config_dict() -> dict:
@@ -23,6 +61,7 @@ def create_config_dict() -> dict:
             config_dict['user_id'] = lines[0].strip()
             config_dict['api_key'] = lines[1].strip()
             config_dict['url'] = lines[2].strip()
+            config_dict['connection'] = lines[3].strip()
         except Exception:
             pass
     return config_dict
@@ -57,36 +96,51 @@ def get_random_unused_proxy(proxy_list: list) -> str:
         return None
 
 
-def create_driver(proxy: str = None) -> webdriver.Chrome:
+def create_driver(proxy: str = None, profile_id: str = None) -> webdriver.Chrome:
     #options = webdriver.ChromeOptions()
-    options = undetected_chromedriver.ChromeOptions()
-    seleniumwire_options = None
+    #options = undetected_chromedriver.ChromeOptions()
+    #seleniumwire_options = None
     #if proxy:
     #    seleniumwire_options = {
     #        'proxy': {
     #            'https': f'socks5://{proxy}/',
     #        }
     #    }
-    options.add_argument('--disable-blink-features=AutomationControlled')
-    #options.add_argument(
-    #    '--user-agent=Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.43 Mobile Safari/537.36'
-    #)
-    options.add_argument('--ignore-ssl-errors')
-    options.add_argument('--ignore-certificate-errors')
+    #options.add_argument('--disable-blink-features=AutomationControlled')
+    #options.add_argument('--ignore-ssl-errors')
+    #options.add_argument('--ignore-certificate-errors')
     #options.add_argument("--headless")  # Run Chrome in headless mode
 
-    service = Service(executable_path=ChromeDriverManager().install())
+    #service = Service(executable_path=ChromeDriverManager().install())
+    service = Service(executable_path=r'c:\Users\berch\Downloads\chromedriver-win64\chromedriver-win64\chromedriver.exe')
+    #c:\Users\berch\Downloads\chromedriver-win64\chromedriver-win64\chromedriver.exe
+    #driver = undetected_chromedriver.Chrome(
+    #    seleniumwire_options=seleniumwire_options,
+    #    service=service,
+    #    options=options,
+    #)
+    open_url = f'http://local.adspower.net:50325/api/v1/browser/start?user_id={profile_id}'
+    #close_url = "http://local.adspower.net:50325/api/v1/browser/stop?user_id=" + ads_id
+
+    resp = requests.get(open_url).json()
+
+    #chrome_driver = resp["data"]["webdriver"]
+    options = Options()
+    options.add_argument('--disable-blink-features=AutomationControlled')
+    options.add_argument('--ignore-ssl-errors')
+    options.add_argument('--ignore-certificate-errors')
+    options.add_experimental_option("debuggerAddress", resp["data"]["ws"]["selenium"])
+    #driver = webdriver.Chrome(options=chrome_options)
     driver = undetected_chromedriver.Chrome(
-        seleniumwire_options=seleniumwire_options,
+        #seleniumwire_options=seleniumwire_options,
+        seleniumwire_options=None,
         service=service,
         options=options,
     )
-    #driver.execute_cdp_cmd('Emulation.setDeviceMetricsOverride', {
-    #    'width': 360, # Set your desired width here
-    #    'height': 740, # Set your desired height here
-    #    'deviceScaleFactor': 0, # Set the scale factor here
-    #    'mobile': True, # Emulate a mobile device
-    #})
+    driver.get('https://it.wallapop.com/login')
+    #time.sleep(5)
+    #driver.quit()
+    #requests.get(close_url)
     return driver
 
 
@@ -189,6 +243,19 @@ credentials_dict = create_credentials_dict()
 proxy_list = create_proxy_list()
 drivers = []
 config_dict = create_config_dict()
+profile_ids = []
+group_id = create_ads_power_group()
+profile_id_counter = 0
+
+for i in range(len(credentials_dict)):
+    proxy_host, proxy_port = get_random_unused_proxy(proxy_list=proxy_list).split(':')
+    profile_id = create_ads_power_profile(
+        connection=config_dict['connection'], 
+        host=proxy_host,
+        port=proxy_port,
+        group_id=group_id,
+    )
+    profile_ids.append(profile_id)
 
 for email, password in credentials_dict.items():
     drivers.append(
@@ -196,7 +263,8 @@ for email, password in credentials_dict.items():
             driver=create_driver(
                 proxy=get_random_unused_proxy(
                     proxy_list=proxy_list,
-                )
+                ),
+                profile_id=profile_ids[profile_id_counter],
             ),
             email=email,
             password=password,
@@ -208,3 +276,6 @@ sleep(15*60)
 for driver in drivers:
     driver.close()
     driver.quit()
+
+
+#create_ads_power_group()
