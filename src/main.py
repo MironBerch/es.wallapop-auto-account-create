@@ -7,12 +7,10 @@ from loguru import logger
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from seleniumwire import undetected_chromedriver
-#from seleniumwire import webdriver, undetected_chromedriver
-#from webdriver_manager.chrome import ChromeDriverManager
 import requests
 import random
 import string
+from selenium.webdriver.chrome.options import Options
 
 logger.add(
     sink=lambda message: print(message, end=''),
@@ -20,20 +18,32 @@ logger.add(
 )
 
 
+def check_proxy(proxy_host, proxy_port):
+    socks.set_default_proxy(socks.SOCKS5, proxy_host, int(proxy_port))
+    socket.socket = socks.socksocket
+    try:
+        response = requests.get('http://www.example.com')
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+    except requests.exceptions.RequestException:
+        return False
+
+
 def create_ads_power_group() -> str:
-    create_group = requests.post(
+    group = requests.post(
         'http://local.adspower.net:50325/api/v1/group/create',
         json={
             'group_name': ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8)),
         },
     ).json()
-    group_id = create_group['data']['group_id']
-    return str(group_id)
+    return group['data']['group_id']
 
 
-def create_ads_power_profile(connection, host, port, group_id) -> str:
+def create_ads_power_profile(host, port, group_id) -> str:
     create = requests.post(
-        f'{connection}/api/v1/user/create', 
+        'http://local.adspower.net:50325/api/v1/user/create', 
         json={
             'group_id': group_id,
             'user_proxy_config': {
@@ -51,20 +61,6 @@ def create_ads_power_profile(connection, host, port, group_id) -> str:
         },
     ).json()
     return create['data']['ip']
-
-
-def create_config_dict() -> dict:
-    config_dict = {}
-    with open('config.txt', 'r') as file:
-        lines = file.readlines()
-        try:
-            config_dict['user_id'] = lines[0].strip()
-            config_dict['api_key'] = lines[1].strip()
-            config_dict['url'] = lines[2].strip()
-            config_dict['connection'] = lines[3].strip()
-        except Exception:
-            pass
-    return config_dict
 
 
 def create_credentials_dict() -> dict[str, str]:
@@ -97,49 +93,22 @@ def get_random_unused_proxy(proxy_list: list) -> str:
 
 
 def create_driver(proxy: str = None, profile_id: str = None) -> webdriver.Chrome:
-    #options = webdriver.ChromeOptions()
-    #options = undetected_chromedriver.ChromeOptions()
-    #seleniumwire_options = None
-    #if proxy:
-    #    seleniumwire_options = {
-    #        'proxy': {
-    #            'https': f'socks5://{proxy}/',
-    #        }
-    #    }
-    #options.add_argument('--disable-blink-features=AutomationControlled')
-    #options.add_argument('--ignore-ssl-errors')
-    #options.add_argument('--ignore-certificate-errors')
     #options.add_argument("--headless")  # Run Chrome in headless mode
-
-    #service = Service(executable_path=ChromeDriverManager().install())
-    service = Service(executable_path=r'c:\Users\berch\Downloads\chromedriver-win64\chromedriver-win64\chromedriver.exe')
-    #c:\Users\berch\Downloads\chromedriver-win64\chromedriver-win64\chromedriver.exe
-    #driver = undetected_chromedriver.Chrome(
-    #    seleniumwire_options=seleniumwire_options,
-    #    service=service,
-    #    options=options,
-    #)
     open_url = f'http://local.adspower.net:50325/api/v1/browser/start?user_id={profile_id}'
-    #close_url = "http://local.adspower.net:50325/api/v1/browser/stop?user_id=" + ads_id
+    #close_url = f'http://local.adspower.net:50325/api/v1/browser/stop?user_id={profile_id}'
 
-    resp = requests.get(open_url).json()
-
-    #chrome_driver = resp["data"]["webdriver"]
+    response = requests.get(open_url).json()
+    service = Service(response['data']['webdriver'])
     options = Options()
     options.add_argument('--disable-blink-features=AutomationControlled')
     options.add_argument('--ignore-ssl-errors')
     options.add_argument('--ignore-certificate-errors')
-    options.add_experimental_option("debuggerAddress", resp["data"]["ws"]["selenium"])
-    #driver = webdriver.Chrome(options=chrome_options)
-    driver = undetected_chromedriver.Chrome(
-        #seleniumwire_options=seleniumwire_options,
-        seleniumwire_options=None,
+    options.add_experimental_option("debuggerAddress", response['data']['ws']['selenium'])
+    driver = webdriver.Chrome(
         service=service,
         options=options,
     )
     driver.get('https://it.wallapop.com/login')
-    #time.sleep(5)
-    #driver.quit()
     #requests.get(close_url)
     return driver
 
@@ -230,7 +199,6 @@ def register_user_account_in_it_wallapop(
             sleep(20)
         logger.info(f'{email} - начинает ожидание длинной в 15 минут')
         return driver
-        #sleep(15*60)
 
     except Exception as exception:
         logger.error(exception)
@@ -242,15 +210,14 @@ def register_user_account_in_it_wallapop(
 credentials_dict = create_credentials_dict()
 proxy_list = create_proxy_list()
 drivers = []
-config_dict = create_config_dict()
 profile_ids = []
 group_id = create_ads_power_group()
 profile_id_counter = 0
 
+
 for i in range(len(credentials_dict)):
     proxy_host, proxy_port = get_random_unused_proxy(proxy_list=proxy_list).split(':')
     profile_id = create_ads_power_profile(
-        connection=config_dict['connection'], 
         host=proxy_host,
         port=proxy_port,
         group_id=group_id,
@@ -271,11 +238,6 @@ for email, password in credentials_dict.items():
         )
     )
 
-sleep(15*60)
-
 for driver in drivers:
     driver.close()
     driver.quit()
-
-
-#create_ads_power_group()
