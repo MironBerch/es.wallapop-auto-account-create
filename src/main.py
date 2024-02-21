@@ -31,6 +31,15 @@ def check_proxy(proxy_host, proxy_port):
         return False
 
 
+def filter_proxies(proxy_list):
+    filtered_proxies = []
+    for proxy in proxy_list:
+        proxy_host, proxy_port = proxy.split(':')
+        if check_proxy(proxy_host, proxy_port):
+            filtered_proxies.append(proxy)
+    return filtered_proxies
+
+
 def create_ads_power_group() -> str:
     group = requests.post(
         'http://local.adspower.net:50325/api/v1/group/create',
@@ -60,7 +69,7 @@ def create_ads_power_profile(host, port, group_id) -> str:
             },
         },
     ).json()
-    return create['data']['ip']
+    return create['data']['id']
 
 
 def create_credentials_dict() -> dict[str, str]:
@@ -208,7 +217,7 @@ def register_user_account_in_it_wallapop(
 
 
 credentials_dict = create_credentials_dict()
-proxy_list = create_proxy_list()
+proxy_list = filter_proxies(create_proxy_list())
 drivers = []
 profile_ids = []
 group_id = create_ads_power_group()
@@ -237,6 +246,7 @@ for email, password in credentials_dict.items():
             password=password,
         )
     )
+    profile_id_counter += 1
 
 for driver in drivers:
     driver.close()
