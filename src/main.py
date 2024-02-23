@@ -3,22 +3,16 @@ from random import choice
 import requests
 import socks
 import socket
-from loguru import logger
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 import requests
-import random
 import string
 from selenium.webdriver.chrome.options import Options
 
-logger.add(
-    sink=lambda message: print(message, end=''),
-    format='<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan> - {message}',
-)
-
 
 def check_proxy(proxy_host, proxy_port):
+    original_socket = socket.socket
     socks.set_default_proxy(socks.SOCKS5, proxy_host, int(proxy_port))
     socket.socket = socks.socksocket
     try:
@@ -29,7 +23,9 @@ def check_proxy(proxy_host, proxy_port):
             return False
     except requests.exceptions.RequestException:
         return False
-
+    finally:
+        socks.set_default_proxy()
+        socket.socket = original_socket
 
 def filter_proxies(proxy_list):
     filtered_proxies = []
@@ -37,20 +33,24 @@ def filter_proxies(proxy_list):
         proxy_host, proxy_port = proxy.split(':')
         if check_proxy(proxy_host, proxy_port):
             filtered_proxies.append(proxy)
+        sleep(0.5)
     return filtered_proxies
 
 
 def create_ads_power_group() -> str:
-    group = requests.post(
-        'http://local.adspower.net:50325/api/v1/group/create',
+    group_name = ''.join(choice(string.ascii_letters + string.digits) for _ in range(8))
+    create_group = requests.post(
+        f'http://local.adspower.net:50325/api/v1/group/create',
         json={
-            'group_name': ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8)),
+            'group_name': group_name,
         },
     ).json()
-    return group['data']['group_id']
+    group_id = create_group['data']['group_id']
+    print(f"Создана группа с названием {group_name}")
+    return str(group_id)
 
 
-def create_ads_power_profile(host, port, group_id) -> str:
+def create_ads_power_profile(host, port, group_id) -> str | None:
     create = requests.post(
         'http://local.adspower.net:50325/api/v1/user/create', 
         json={
@@ -69,7 +69,11 @@ def create_ads_power_profile(host, port, group_id) -> str:
             },
         },
     ).json()
-    return create['data']['id']
+    try:
+        return create['data']['id']
+    except Exception:
+        print(create['msg'])
+        return None
 
 
 def create_credentials_dict() -> dict[str, str]:
@@ -87,7 +91,7 @@ def create_proxy_list() -> list[str] | None:
             proxie_choice = f.read().splitlines()
             return proxie_choice
     except Exception:
-        logger.warning('Файл proxy.txt не найден')
+        print('Файл proxy.txt не найден')
         return None
 
 
@@ -97,11 +101,11 @@ def get_random_unused_proxy(proxy_list: list) -> str:
         proxy_list.remove(random_proxy)
         return random_proxy
     else:
-        logger.warning('Отсутствуют доступные прокси')
+        print('Отсутствуют доступные прокси')
         return None
 
 
-def create_driver(proxy: str = None, profile_id: str = None) -> webdriver.Chrome:
+def create_driver(profile_id: str = None) -> webdriver.Chrome:
     #options.add_argument("--headless")  # Run Chrome in headless mode
     open_url = f'http://local.adspower.net:50325/api/v1/browser/start?user_id={profile_id}'
     #close_url = f'http://local.adspower.net:50325/api/v1/browser/stop?user_id={profile_id}'
@@ -117,8 +121,6 @@ def create_driver(proxy: str = None, profile_id: str = None) -> webdriver.Chrome
         service=service,
         options=options,
     )
-    driver.get('https://it.wallapop.com/login')
-    #requests.get(close_url)
     return driver
 
 
@@ -129,29 +131,29 @@ def register_user_account_in_it_wallapop(
 ) -> None:
     try:
         driver.get(url='https://it.wallapop.com/login')
-        sleep(20)
+        sleep(30)
         try:
             driver.find_element(
                 By.XPATH,
                 '//button[@id="onetrust-accept-btn-handler" and contains(text(), "Accetta tutto")]',
             ).click()
-            logger.info(f'{email} - приняты cookies')
+            print(f'{email} - приняты cookies')
         except Exception as exception:
-            logger.warning(f'{email} - не найдено окно принятия cookies')
+            print(f'{email} - не найдено окно принятия cookies')
         finally:
             sleep(20)
         try:
             driver.find_element(By.XPATH, '//walla-button[1]').click()
-            logger.info(f'{email} - начат вход google пользователя')
+            print(f'{email} - начат вход google пользователя')
         except Exception as exception:
-            logger.error(exception)
+            print(exception)
         finally:
             sleep(20)
 
         main_window_handle = driver.window_handles[0]
         child_window_handle = driver.window_handles[1]
         driver.switch_to.window(child_window_handle)
-        logger.info(f'{email} - успешно открыто дочернее google oaut окно')
+        print(f'{email} - успешно открыто дочернее google oaut окно')
         sleep(20)
 
         try:
@@ -160,9 +162,9 @@ def register_user_account_in_it_wallapop(
                 '//input[@type="email"]',
             ).send_keys(email)
             driver.find_element(By.XPATH, '//span[text()="Next"]').click()
-            logger.info(f'{email} - заполнено поле почты')
+            print(f'{email} - заполнено поле почты')
         except Exception as exception:
-            logger.error(exception)
+            print(exception)
         finally:
             sleep(20)
 
@@ -171,12 +173,12 @@ def register_user_account_in_it_wallapop(
             '//input[@type="password"]',
         ).send_keys(password)
         driver.find_element(By.XPATH, '//span[text()="Next"]').click()
-        logger.info(f'{email} - заполнено поле пароля')
+        print(f'{email} - заполнено поле пароля')
         sleep(20)
 
         try:
             driver.find_element(By.ID, 'confirm').click()
-            logger.warning(f'{email} - Добро пожаловать в ваш новый аккаунт')
+            print(f'{email} - Добро пожаловать в ваш новый аккаунт')
         except Exception as exception:
             pass
         finally:
@@ -184,15 +186,15 @@ def register_user_account_in_it_wallapop(
 
         try:
             driver.find_element(By.XPATH, '//div[@id="confirm_yes"]').click()
-            logger.info(f'{email} - подтверждён вход через google')
+            print(f'{email} - подтверждён вход через google')
         except Exception as exception:
-            logger.info(f'{email} - вероятно браузер не потребовал подтверждение входа через google')
-            logger.error(exception)
+            print(f'{email} - вероятно браузер не потребовал подтверждение входа через google')
+            print(exception)
         finally:
             sleep(20)
 
         driver.switch_to.window(main_window_handle)
-        logger.info(f'{email} - вернулись к основному окну')
+        print(f'{email} - вернулись к основному окну')
         sleep(20)
 
         try:
@@ -201,16 +203,16 @@ def register_user_account_in_it_wallapop(
                 '(//input[@type="checkbox"])[2]',
             ).click()
             driver.find_element(By.XPATH, '(//walla-button[1])[2]').click()
-            logger.info(f'{email} - прочитано лицензионное соглашение')
+            print(f'{email} - прочитано лицензионное соглашение')
         except Exception as exception:
-            logger.error(exception)
+            print(exception)
         finally:
             sleep(20)
-        logger.info(f'{email} - начинает ожидание длинной в 15 минут')
+        print(f'{email} - начинает ожидание длинной в 15 минут')
         return driver
 
     except Exception as exception:
-        logger.error(exception)
+        print(exception)
     finally:
         driver.close()
         driver.quit()
@@ -220,34 +222,38 @@ credentials_dict = create_credentials_dict()
 proxy_list = filter_proxies(create_proxy_list())
 drivers = []
 profile_ids = []
-group_id = create_ads_power_group()
 profile_id_counter = 0
+group_id = create_ads_power_group()
 
-
-for i in range(len(credentials_dict)):
-    proxy_host, proxy_port = get_random_unused_proxy(proxy_list=proxy_list).split(':')
-    profile_id = create_ads_power_profile(
-        host=proxy_host,
-        port=proxy_port,
-        group_id=group_id,
-    )
-    profile_ids.append(profile_id)
-
-for email, password in credentials_dict.items():
-    drivers.append(
-        register_user_account_in_it_wallapop(
-            driver=create_driver(
-                proxy=get_random_unused_proxy(
-                    proxy_list=proxy_list,
-                ),
-                profile_id=profile_ids[profile_id_counter],
-            ),
-            email=email,
-            password=password,
+if len(proxy_list) >= len(credentials_dict):
+    for i in range(len(credentials_dict)):
+        proxy_host, proxy_port = get_random_unused_proxy(proxy_list=proxy_list).split(':')
+        profile_id = create_ads_power_profile(
+            host=proxy_host,
+            port=proxy_port,
+            group_id=group_id,
         )
-    )
-    profile_id_counter += 1
+        if profile_id:
+            profile_ids.append(profile_id)
+        sleep(1)
 
-for driver in drivers:
-    driver.close()
-    driver.quit()
+    for email, password in credentials_dict.items():
+        drivers.append(
+            #create_driver(
+            #    profile_id=profile_ids[profile_id_counter],
+            #)
+            register_user_account_in_it_wallapop(
+                driver=create_driver(
+                    profile_id=profile_ids[profile_id_counter],
+                ),
+                email=email,
+                password=password,
+            )
+        )
+        profile_id_counter += 1
+    print(f'Количество созданных профилей: {len(profile_ids)}')
+else:
+    print('Количество рабочих прокси меньше необходимого')
+    print(f'Количество рабочих прокси: {len(proxy_list)}')
+for i in drivers:
+    print(i)
