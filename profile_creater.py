@@ -75,15 +75,6 @@ def create_ads_power_profile(host, port, group_id) -> str | None:
         return None
 
 
-def create_credentials_dict() -> dict[str, str]:
-    credentials_dict = {}
-    with open('credentials.txt', 'r') as file:
-        for line in file:
-            email, password = line.strip().split(' ')
-            credentials_dict[email] = password
-    return credentials_dict
-
-
 def create_proxy_list() -> list[str] | None:
     try:
         with open('proxy.txt', 'r') as f:
@@ -102,15 +93,13 @@ def get_random_unused_proxy(proxy_list: list) -> str:
         return None
 
 
-credentials_dict = create_credentials_dict()
+credentials_dict = int(input('Введите количество профилей которое необходимо зарегистрировать:'))
 proxy_list = filter_proxies(create_proxy_list())
-drivers = []
 profile_ids = []
 group_id = create_ads_power_group()
-profile_id_counter = 0
 
-if len(proxy_list) >= len(credentials_dict):
-    for i in range(len(credentials_dict)):
+if len(proxy_list) >= credentials_dict:
+    for i in range(credentials_dict):
         proxy_host, proxy_port = get_random_unused_proxy(proxy_list=proxy_list).split(':')
         profile_id = create_ads_power_profile(
             host=proxy_host,
@@ -124,3 +113,5 @@ if len(proxy_list) >= len(credentials_dict):
 else:
     print('Количество рабочих прокси меньше необходимого')
     print(f'Количество рабочих прокси: {len(proxy_list)}')
+
+sleep(15)
