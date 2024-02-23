@@ -48,14 +48,6 @@
      192.168.42.70:30003
      192.168.42.70:30004
      ```
-   ### покачто не надо выполнять этот пункт
-   - Создайте файл `credentials.txt` и добавьте почты и пароли в следующем формате:
-     ```
-     dbjSo10gBoUp@hotmail.com Tn3BiYDFBvs2
-     6wXMkeMKJgHl@hotmail.com M4jSZnZWClNI
-     NPJF7Ainv9bP@hotmail.com 3TbnSqOOfp6V
-     TmDFA8R2PG5R@hotmail.com oN6vCUz2S7Q1
-     ```
 
 4. **Запустите проект:**
 
