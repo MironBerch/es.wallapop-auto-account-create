@@ -35,5 +35,3 @@ webdriver-manager==4.0.1
 websockets==12.0
 wsproto==1.2.0
 zstandard==0.22.0
-requests
-PySocks
